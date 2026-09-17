@@ -1,4 +1,4 @@
-### ☁️ AWS Cloud Automations 🚀
+### ☁️🚀 AWS Cloud Automations 
 *A robust collection of scripts and automations designed for efficient, secure, and multi-account AWS management.*
 
 [![AWS CLI](https://img.shields.io/badge/AWS%20CLI-v2-orange?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/cli/)
