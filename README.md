@@ -10,13 +10,7 @@
 
 #### 📖 Overview
 
-Welcome to **AWS Cloud Automations**! This repository provides a centralized toolkit of **Shell Scripts, Python programs, and AWS CLI commands** engineered to streamline infrastructure management across **multiple AWS accounts and regions**.
-
-Designed for **Cloud Engineers, DevOps, and SRE professionals**, these automations eliminate repetitive manual tasks, reduce operational overhead, and enforce governance at scale.
-
----
-
-#### ✨ Why Automate AWS Operations?
+Welcome to **AWS Cloud Automations**! This repository provides a centralized toolkit of **Shell Scripts, Python programs, and AWS CLI commands** engineered to streamline infrastructure management across **multiple AWS accounts and regions**. Designed for **Cloud Engineers, DevOps, and SRE professionals**, these automations eliminate repetitive manual tasks, reduce operational overhead, and enforce governance at scale.
 
 | Pillar | Description |
 | :--- | :--- |
@@ -24,8 +18,6 @@ Designed for **Cloud Engineers, DevOps, and SRE professionals**, these automatio
 | 🛡️ **Compliance** | Ensure that Resources and Configurations are always in **Compliance**. |
 | 📈 **Scalability** | Apply complex actions quickly across **Multiple Accounts and Regions**. |
 | ⚙️ **Standardization** | Automating Tasks removes the Variability and Risk associated with Manual Practices. |
-
----
 
 ⚠️ **Important:** Always Review the Automations before executing them. It is important to fully understand which actions will be implemented.
 Therefore, whenever possible, test them first in non-production environments before executing them in production environments.
