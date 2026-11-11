@@ -1,0 +1,4 @@
+# Keep Unix line endings so the scripts run on Linux, macOS, WSL and CloudShell
+* text=auto eol=lf
+*.sh text eol=lf
+accounts* text eol=lf

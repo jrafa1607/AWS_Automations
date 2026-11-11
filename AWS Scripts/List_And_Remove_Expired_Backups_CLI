@@ -1,3 +1,0 @@
-aws backup list-recovery-points-by-backup-vault --backup-vault-name <VAULT_NAME> --region <REGION> --profile <PROFILE> --output json 
---query 'RecoveryPoints[?Status == `EXPIRED`].[RecoveryPointArn]' | jq -r '.[] | "--recovery-point-arn '\\\"'" + .[0] + "'\\\"'" + .[1]' | 
-xargs --verbose -L1 aws backup delete-recovery-point --backup-vault-name <VAULT_NAME> --region <REGION> --profile <PROFILE>

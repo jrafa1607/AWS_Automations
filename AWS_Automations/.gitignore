@@ -1,0 +1,15 @@
+# Local configuration (account profile names must not be published)
+accounts
+!accounts.example
+
+# Generated reports (may contain IDs, IPs and other sensitive data)
+reports/
+*.csv
+*.txt
+
+# Environment and editor files
+.env
+.venv/
+.DS_Store
+.vscode/
+.idea/

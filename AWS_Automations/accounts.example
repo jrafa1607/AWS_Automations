@@ -1,0 +1,4 @@
+# One AWS CLI profile name per line (the same names used in ~/.aws/config).
+# Copy this file to "accounts" and edit it. Lines starting with # are ignored.
+security-audit-prod
+security-audit-dev
