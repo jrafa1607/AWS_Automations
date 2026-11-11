@@ -23,11 +23,11 @@ Organizations with dozens of AWS accounts need the same questions answered in ev
 
 #### 🔐 Safety Model
 
-* **Read-only by default.** Most scripts only describe resources and can run with the AWS managed policies `SecurityAudit` or `ReadOnlyAccess`.
-* **Dry run first.** Scripts that change resources only report what they *would* do, unless you set `DRY_RUN=false`.
-* **Typed confirmation.** When applying changes, the script asks you to type a specific word before anything happens.
-* **Sessions are checked.** Accounts without a valid SSO session are skipped with a clear message instead of failing halfway.
-* **Reports stay local.** Reports go to `reports/`, which is ignored by git, because they may contain IDs, IPs, and user names.
+* **Read-only by default** Most scripts only describe resources and can run with the AWS managed policies `SecurityAudit` or `ReadOnlyAccess`.
+* **Dry run first** Scripts that change resources only report what they *would* do, unless you set `DRY_RUN=false`.
+* **Typed confirmation** When applying changes, the script asks you to type a specific word before anything happens.
+* **Safe Sessions** Accounts without a valid SSO session are skipped with a clear message instead of failing halfway.
+* **Reports stay local** Reports go to `reports/`, which is ignored by git, because they may contain IDs, IPs, and user names.
 
 ---
 
