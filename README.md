@@ -14,7 +14,7 @@ Organizations with dozens of AWS accounts need the same questions answered in ev
 
 | Pillar | How the scripts support it |
 | :--- | :--- |
-| 🛡️ **Security posture** | Read-only checks for logging, threat detection, public exposure, encryption, and credentials |
+| 🛡️ **Security** | Read-only checks for logging, threat detection, public exposure, encryption, and credentials |
 | 📋 **Inventory** | One report per resource type across all accounts and regions |
 | 🧯 **Safe operations** | Changes run in **dry-run mode by default** and require typed confirmation |
 | 📈 **Scale** | The same check runs in every account listed in `accounts` |
