@@ -26,7 +26,7 @@ for account in "${ACCOUNTS[@]}"; do
   while IFS=$'\t' read -r zone_id zone_name private_zone; do
     [[ -n "$zone_id" ]] || continue
     aws route53 list-resource-record-sets --hosted-zone-id "$zone_id" --profile "$account" --output text \
-      --query 'ResourceRecordSets[].[Name, Type, TTL, join(` `, ResourceRecords[].Value || `[]`) || 'None', AliasTarget.DNSName]' </dev/null |
+      --query 'ResourceRecordSets[].[Name, Type, TTL, join(` `, ResourceRecords[].Value || `[]`) || `"None"`, AliasTarget.DNSName]' </dev/null |
     while IFS=$'\t' read -r name type ttl values alias; do
       csv_row "$account" "$zone_id" "$zone_name" "$private_zone" "$name" "$type" "$ttl" "$values" "$alias"
     done >> "$out"

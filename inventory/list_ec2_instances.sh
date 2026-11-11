@@ -18,7 +18,7 @@ for account in "${ACCOUNTS[@]}"; do
   for region in $REGIONS; do
     log "EC2 instances: $account / $region"
     aws ec2 describe-instances --profile "$account" --region "$region" --output text \
-      --query 'Reservations[].Instances[].[InstanceId, Tags[?Key==`Name`]|[0].Value || 'None', State.Name, Placement.AvailabilityZone, PrivateIpAddress, PublicIpAddress]' |
+      --query 'Reservations[].Instances[].[InstanceId, Tags[?Key==`Name`]|[0].Value || `"None"`, State.Name, Placement.AvailabilityZone, PrivateIpAddress, PublicIpAddress]' |
     while IFS=$'\t' read -r id name state az private_ip public_ip; do
       [[ -n "$id" ]] || continue
       csv_row "$account" "$region" "$id" "$name" "$state" "$az" "$private_ip" "$public_ip"

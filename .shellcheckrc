@@ -1,0 +1,3 @@
+# Backticks inside single quotes are JMESPath literals in AWS CLI --query
+# expressions, not command substitutions.
+disable=SC2016
