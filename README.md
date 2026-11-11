@@ -34,6 +34,18 @@ Organizations with dozens of AWS accounts need the same questions answered in ev
 
 ---
 
+#### 🗂️ Scripts Description
+
+| Folder | Scripts | Type |
+| --- | --- | --- |
+| `security/` | CloudTrail logging, GuardDuty, open security groups, S3 Block Public Access, EBS default encryption, IAM access keys audit | Read-only (`SecurityAudit`) |
+| `security/` | S3 versioning enforcement | Changes resources (dry run by default) |
+| `inventory/` | EC2, Lambda, DocumentDB, Route 53, failed CloudFormation stacks, ENI lookup by IP | Read-only (`ReadOnlyAccess`) |
+| `backup/` | Delete all or expired recovery points | Destructive (dry run by default) |
+| `quotas/` | Request Service Quotas increases | Changes resources (dry run by default) |
+
+---
+
 #### 🚀 Quick Start
 
 ```bash
