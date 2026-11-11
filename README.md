@@ -67,24 +67,6 @@ Requirements: AWS CLI v2 and Bash 3.2 or later (Linux, macOS, WSL, or AWS CloudS
 
 ---
 
-#### 🔄 Migration from the Previous Scripts
-
-| Previous script | Replaced by |
-| --- | --- |
-| `CleanBackupVault.sh`, `List_And_Remove_Expired_Backups_CLI` | `backup/delete_vault_recovery_points.sh` |
-| `Get_All_Trails_Enabled.sh` | `security/check_cloudtrail_status.sh` |
-| `Get_And_Put_Versioning_s3.sh` | `security/enforce_s3_versioning.sh` |
-| `Get_IAM_All_Info.sh` | `security/audit_iam_access_keys.sh` |
-| `GetRoute53_All_Info.sh` | `inventory/list_route53_records.sh` |
-| `List_All_Ec2_With_ID_Information.sh`, `List_All_Ec2_With_IP_Information.sh` | `inventory/list_ec2_instances.sh` |
-| `List_All_Lambda_Functions.sh` | `inventory/list_lambda_functions.sh` |
-| `List_All_DocumentsDB.sh` | `inventory/list_documentdb_clusters.sh` |
-| `List_All_SecurityGroups.sh` | `inventory/find_eni_by_private_ip.sh` (what it actually did) and `security/check_open_security_groups.sh` |
-| `List_All_StackSet_With_Rollback_Incomplete.sh` | `inventory/list_stacks_failed_states.sh` |
-| `Increase_Quotas_Policies_For_Roles.sh`, `Increase_Quotas_VPCs_For_Regions.sh` | `quotas/request_quota_increase.sh` |
-
----
-
 #### ⚖️ Intellectual Property (IP) Notice
 
 All source code and documentation in this repository are the exclusive Intellectual Property of the author. All rights reserved. Use of this content for academic or professional purposes must include proper citation and attribution.
