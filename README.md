@@ -34,40 +34,6 @@ Organizations with dozens of AWS accounts need the same questions answered in ev
 
 ---
 
-#### 🗂️ Script Catalog
-
-**Security posture** (`security/`)
-
-| Script | What it checks | Type | Minimum permissions |
-| --- | --- | --- | --- |
-| `check_cloudtrail_status.sh` | A trail exists **and is logging**, is multi-region, and validates log files | Read-only | `SecurityAudit` |
-| `check_guardduty_status.sh` | GuardDuty detector enabled in every account and region | Read-only | `SecurityAudit` |
-| `check_open_security_groups.sh` | Inbound rules open to `0.0.0.0/0` or `::/0` on sensitive ports or all ports | Read-only | `SecurityAudit` |
-| `check_s3_block_public_access.sh` | S3 Block Public Access at account and bucket level | Read-only | `SecurityAudit` |
-| `check_ebs_default_encryption.sh` | EBS encryption by default enabled per region | Read-only | `SecurityAudit` |
-| `audit_iam_access_keys.sh` | Access keys never used, unused for 90+ days, or older than 90 days | Read-only | `SecurityAudit` |
-| `enforce_s3_versioning.sh` | Reports buckets without versioning and, optionally, enables it | **Changes resources** (dry run by default) | `SecurityAudit` + `s3:PutBucketVersioning` |
-
-**Inventory** (`inventory/`)
-
-| Script | What it lists | Type | Minimum permissions |
-| --- | --- | --- | --- |
-| `list_ec2_instances.sh` | Instances with Name tag, state, AZ, and IPs | Read-only | `ReadOnlyAccess` |
-| `list_lambda_functions.sh` | Functions with runtime (to spot deprecated runtimes) | Read-only | `ReadOnlyAccess` |
-| `list_documentdb_clusters.sh` | DocumentDB clusters with encryption and deletion protection | Read-only | `ReadOnlyAccess` |
-| `list_route53_records.sh` | Hosted zones and records, including alias targets | Read-only | `ReadOnlyAccess` |
-| `list_stacks_failed_states.sh` | CloudFormation stacks stuck in failed rollback or delete states | Read-only | `ReadOnlyAccess` |
-| `find_eni_by_private_ip.sh` | Which account, instance, and security groups own a private IP | Read-only | `ReadOnlyAccess` |
-
-**Operations** (`backup/`, `quotas/`)
-
-| Script | What it does | Type | Minimum permissions |
-| --- | --- | --- | --- |
-| `backup/delete_vault_recovery_points.sh` | Deletes all or only **EXPIRED** recovery points in a backup vault | **Destructive** (dry run by default) | `backup:ListRecoveryPointsByBackupVault`, `backup:DeleteRecoveryPoint` |
-| `quotas/request_quota_increase.sh` | Requests a Service Quotas increase, skipping accounts already at the target | **Changes resources** (dry run by default) | `servicequotas:Get*`, `servicequotas:RequestServiceQuotaIncrease` |
-
----
-
 #### 🚀 Quick Start
 
 ```bash
