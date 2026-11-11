@@ -73,7 +73,7 @@ DRY_RUN=false ./security/enforce_s3_versioning.sh
 | `OUTPUT_DIR` | `reports` | Folder for the CSV reports |
 
 > [!IMPORTANT]
-> Always read a script before running it, and test changes in non-production accounts first.
+> Always read a script before running it, and test changes in non-production accounts first.<br>
 > Requirements: AWS CLI v2 and Bash 3.2 or later (Linux, macOS, WSL, or AWS CloudShell).
 
 ---
