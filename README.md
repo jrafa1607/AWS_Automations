@@ -29,9 +29,6 @@ Organizations with dozens of AWS accounts need the same questions answered in ev
 * **Sessions are checked.** Accounts without a valid SSO session are skipped with a clear message instead of failing halfway.
 * **Reports stay local.** Reports go to `reports/`, which is ignored by git, because they may contain IDs, IPs, and user names.
 
-> [!IMPORTANT]
-> Always read a script before running it, and test changes in non-production accounts first.
-
 ---
 
 #### 🗂️ Scripts Description
@@ -76,6 +73,9 @@ DRY_RUN=false ./security/enforce_s3_versioning.sh
 | `OUTPUT_DIR` | `reports` | Folder for the CSV reports |
 
 Requirements: AWS CLI v2 and Bash 3.2 or later (Linux, macOS, WSL, or AWS CloudShell).
+
+> [!IMPORTANT]
+> Always read a script before running it, and test changes in non-production accounts first.
 
 ---
 
