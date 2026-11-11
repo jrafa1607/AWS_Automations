@@ -33,13 +33,13 @@ Organizations with dozens of AWS accounts need the same questions answered in ev
 
 #### 🗂️ Scripts Description
 
-| Folder | Scripts | Type |
+| Folder | What it covers | Type |
 | --- | --- | --- |
-| `security/` | CloudTrail logging, GuardDuty, open security groups, S3 Block Public Access, EBS default encryption, IAM access keys audit | Read-only (`SecurityAudit`) |
-| `security/` | S3 versioning enforcement | Changes resources (dry run by default) |
-| `inventory/` | EC2, Lambda, DocumentDB, Route 53, failed CloudFormation stacks, ENI lookup by IP | Read-only (`ReadOnlyAccess`) |
-| `backup/` | Delete all or expired recovery points | Destructive (dry run by default) |
-| `quotas/` | Request Service Quotas increases | Changes resources (dry run by default) |
+| `security/` | CloudTrail, GuardDuty, security groups, S3, EBS, IAM keys | Read-only |
+| `security/` | S3 versioning enforcement | Dry run by default |
+| `inventory/` | EC2, Lambda, DocumentDB, Route 53, stacks, ENI by IP | Read-only |
+| `backup/` | Recovery point cleanup | Dry run by default |
+| `quotas/` | Service quota increase requests | Dry run by default |
 
 ---
 
@@ -72,10 +72,9 @@ DRY_RUN=false ./security/enforce_s3_versioning.sh
 | `DRY_RUN` | `true` | Set to `false` to apply changes |
 | `OUTPUT_DIR` | `reports` | Folder for the CSV reports |
 
-Requirements: AWS CLI v2 and Bash 3.2 or later (Linux, macOS, WSL, or AWS CloudShell).
-
 > [!IMPORTANT]
 > Always read a script before running it, and test changes in non-production accounts first.
+> Requirements: AWS CLI v2 and Bash 3.2 or later (Linux, macOS, WSL, or AWS CloudShell).
 
 ---
 
