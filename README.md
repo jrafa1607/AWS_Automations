@@ -1,6 +1,6 @@
 ### ☁️🛡️ AWS Cloud Automations
 
-*Multi-account AWS CLI scripts for security posture checks, inventory, and safe operations, using AWS IAM Identity Center (SSO).*
+*Multi-account AWS CLI scripts for security posture checks, inventory, and safe operations, using AWS IAM Identity Center.*
 
 [![AWS CLI](https://img.shields.io/badge/AWS%20CLI-v2-orange?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/cli/)
 [![Shell Script](https://img.shields.io/badge/Shell%20Script-Bash-green?style=for-the-badge&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
