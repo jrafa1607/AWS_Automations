@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Deletes recovery points from an AWS Backup vault in every account (all points, or only EXPIRED ones).
 #           Replaces CleanBackupVault.sh and List_And_Remove_Expired_Backups_CLI.
 # Type:     CHANGES RESOURCES (DESTRUCTIVE; dry run by default)
@@ -19,7 +20,7 @@ while [[ $# -gt 0 ]]; do
     --vault)        vault="${2:-}"; shift 2 ;;
     --region)       region="${2:-}"; shift 2 ;;
     --expired-only) expired_only=true; shift ;;
-    -h|--help)      sed -n '2,11p' "$0"; exit 0 ;;
+    -h|--help)      sed -n '3,12p' "$0"; exit 0 ;;
     *)              die "Unknown argument: $1 (use --help)" ;;
   esac
 done

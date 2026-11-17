@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks that the root user has MFA enabled and no access keys.
 # Type:     Read-only
 # IAM:      iam:GetAccountSummary (included in SecurityAudit)

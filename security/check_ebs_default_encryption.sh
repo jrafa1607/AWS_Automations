@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks whether EBS encryption by default is enabled in every account and region.
 # Type:     Read-only
 # IAM:      ec2:GetEbsEncryptionByDefault, ec2:GetEbsDefaultKmsKeyId (included in SecurityAudit)

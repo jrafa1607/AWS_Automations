@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks that an IAM Access Analyzer for external access is active in every account and region,
 #           and counts its active findings (resources shared outside the zone of trust).
 # Type:     Read-only

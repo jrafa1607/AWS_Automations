@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Inventory of EC2 instances (ID, Name tag, state, AZ, private and public IPs) in every account and region.
 # Type:     Read-only
 # IAM:      ec2:DescribeInstances (included in ReadOnlyAccess)

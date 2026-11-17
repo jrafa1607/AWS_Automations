@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Reports S3 buckets without versioning and, when explicitly allowed, enables it.
 # Type:     CHANGES RESOURCES (dry run by default)
 # IAM:      s3:ListAllMyBuckets, s3:GetBucketVersioning; to apply: s3:PutBucketVersioning

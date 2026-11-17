@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Shared helpers for every script in this repository.
 # Usage inside a script:
 #   # shellcheck source=../lib/common.sh

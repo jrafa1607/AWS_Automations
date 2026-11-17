@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks that each account has at least one CloudTrail trail that is actually logging
 #           (not only created), and whether it is multi-region, validates log files, is encrypted
 #           with KMS, and sends events to CloudWatch Logs.

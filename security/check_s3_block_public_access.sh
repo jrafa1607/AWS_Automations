@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks S3 Block Public Access at account level and on every bucket.
 # Type:     Read-only
 # IAM:      s3:GetAccountPublicAccessBlock, s3:ListAllMyBuckets, s3:GetBucketPublicAccessBlock (included in SecurityAudit)

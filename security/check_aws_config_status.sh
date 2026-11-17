@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks that AWS Config is recording and has a delivery channel in every account and region.
 # Type:     Read-only
 # IAM:      config:DescribeConfigurationRecorderStatus, config:DescribeDeliveryChannels (included in SecurityAudit)

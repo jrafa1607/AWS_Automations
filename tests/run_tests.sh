@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Offline tests: run the scripts against a fake AWS CLI (tests/stub/aws). No AWS account is needed.
 # Usage: ./tests/run_tests.sh
 set -euo pipefail

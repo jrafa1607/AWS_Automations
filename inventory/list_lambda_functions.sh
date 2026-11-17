@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Inventory of Lambda functions with runtime and last change, to spot deprecated runtimes.
 # Type:     Read-only
 # IAM:      lambda:ListFunctions (included in ReadOnlyAccess)

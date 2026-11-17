@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Inventory of Route 53 hosted zones and their records (including alias targets).
 # Type:     Read-only
 # IAM:      route53:ListHostedZones, route53:ListResourceRecordSets (included in ReadOnlyAccess)

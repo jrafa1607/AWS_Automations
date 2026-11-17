@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Audits IAM user access keys: status, age, last use, and service. Flags keys that are old or unused.
 # Type:     Read-only
 # IAM:      iam:ListUsers, iam:ListAccessKeys, iam:GetAccessKeyLastUsed (included in SecurityAudit)

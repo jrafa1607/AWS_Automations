@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Finds EC2 instances that do not require IMDSv2 (session tokens), which helps protect
 #           instance credentials against SSRF attacks.
 # Type:     Read-only

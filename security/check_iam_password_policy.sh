@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks the IAM password policy for length, complexity, and reuse prevention.
 # Type:     Read-only
 # IAM:      iam:GetAccountPasswordPolicy (included in SecurityAudit)

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Finds enabled customer managed KMS keys (symmetric) without automatic key rotation.
 # Type:     Read-only
 # IAM:      kms:ListKeys, kms:DescribeKey, kms:GetKeyRotationStatus (included in SecurityAudit)

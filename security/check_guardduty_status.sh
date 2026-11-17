@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks whether Amazon GuardDuty is enabled in every account and region.
 # Type:     Read-only
 # IAM:      guardduty:ListDetectors, guardduty:GetDetector (included in SecurityAudit)

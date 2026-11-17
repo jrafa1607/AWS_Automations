@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks whether AWS Security Hub is enabled in every account and region, and which standards are enabled.
 # Type:     Read-only
 # IAM:      securityhub:DescribeHub, securityhub:GetEnabledStandards (included in SecurityAudit)

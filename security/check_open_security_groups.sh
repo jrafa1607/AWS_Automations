@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Finds inbound security group rules open to the internet (0.0.0.0/0 or ::/0)
 #           on sensitive ports, or on all ports, and shows whether the group is in use.
 # Type:     Read-only

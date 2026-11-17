@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Finds EBS snapshots and RDS (instance and cluster) snapshots shared publicly.
 # Type:     Read-only
 # IAM:      ec2:DescribeSnapshots, rds:DescribeDBSnapshots, rds:DescribeDBSnapshotAttributes,

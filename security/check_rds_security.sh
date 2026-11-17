@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Purpose:  Checks RDS DB instances for public accessibility, storage encryption, and deletion protection.
 #           For cluster members (Aurora, DocumentDB, Neptune), deletion protection is read from the cluster.
 # Type:     Read-only

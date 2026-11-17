@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Repository: https://github.com/jrafa1607/AWS_Automations
 # Fake AWS CLI used by tests/run_tests.sh. It records every call and returns canned answers.
 # Accounts: acct-ok (everything fine), acct-denied (AccessDenied on most calls), acct-bad (findings).
 echo "$*" >> "${STUB_LOG:-/dev/null}"
