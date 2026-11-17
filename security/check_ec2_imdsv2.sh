@@ -18,9 +18,12 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "EC2 IMDSv2: $account / $region"
-    aws ec2 describe-instances --profile "$account" --region "$region" --output text \
-      --filters Name=instance-state-name,Values=pending,running,stopping,stopped \
-      --query 'Reservations[].Instances[].[InstanceId, Tags[?Key==`Name`]|[0].Value || `"None"`, State.Name, MetadataOptions.HttpTokens, MetadataOptions.HttpEndpoint]' |
+    if ! instances="$(aws_try ec2 describe-instances --profile "$account" --region "$region" --output text \
+        --filters Name=instance-state-name,Values=pending,running,stopping,stopped \
+        --query 'Reservations[].Instances[].[InstanceId, Tags[?Key==`Name`]|[0].Value || `"None"`, State.Name, MetadataOptions.HttpTokens, MetadataOptions.HttpEndpoint]')"; then
+      csv_row "$account" "$region" "" "" "" "" "" "ERROR: $(last_error)" >> "$out"
+      continue
+    fi
     while IFS=$'\t' read -r id name state tokens endpoint; do
       [[ -n "$id" ]] || continue
       finding="OK"
@@ -30,7 +33,7 @@ for account in "${ACCOUNTS[@]}"; do
         finding="IMDSV2 NOT REQUIRED"
       fi
       csv_row "$account" "$region" "$id" "$name" "$state" "$tokens" "$endpoint" "$finding"
-    done >> "$out"
+    done <<< "$instances" >> "$out"
   done
 done
 

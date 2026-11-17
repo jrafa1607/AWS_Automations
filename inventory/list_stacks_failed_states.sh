@@ -19,13 +19,16 @@ for account in "${ACCOUNTS[@]}"; do
   for region in $REGIONS; do
     log "CloudFormation: $account / $region"
     # shellcheck disable=SC2086  # FAILED_STATES must be split into separate arguments
-    aws cloudformation list-stacks --profile "$account" --region "$region" --output text \
-      --stack-status-filter $FAILED_STATES \
-      --query 'StackSummaries[].[StackName, StackStatus, LastUpdatedTime || CreationTime, StackStatusReason]' |
+    if ! stacks="$(aws_try cloudformation list-stacks --profile "$account" --region "$region" --output text \
+        --stack-status-filter $FAILED_STATES \
+        --query 'StackSummaries[].[StackName, StackStatus, LastUpdatedTime || CreationTime, StackStatusReason || `"None"`]')"; then
+      csv_row "$account" "$region" "ERROR: $(last_error)" "" "" "" >> "$out"
+      continue
+    fi
     while IFS=$'\t' read -r name status updated reason; do
       [[ -n "$name" ]] || continue
       csv_row "$account" "$region" "$name" "$status" "$updated" "$reason"
-    done >> "$out"
+    done <<< "$stacks" >> "$out"
   done
 done
 

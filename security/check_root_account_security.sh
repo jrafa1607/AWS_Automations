@@ -16,8 +16,12 @@ csv_row account root_mfa_enabled root_access_keys_present finding > "$out"
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "Root account: $account"
-  read -r mfa keys < <(aws iam get-account-summary --profile "$account" --output text \
-    --query 'SummaryMap.[AccountMFAEnabled, AccountAccessKeysPresent]') || true
+  if ! summary="$(aws_try iam get-account-summary --profile "$account" --output text \
+      --query 'SummaryMap.[AccountMFAEnabled, AccountAccessKeysPresent]')"; then
+    csv_row "$account" "" "" "ERROR: $(last_error)" >> "$out"
+    continue
+  fi
+  read -r mfa keys <<< "$summary"
   findings=""
   [[ "$mfa" == "1" ]] || findings="ROOT MFA DISABLED"
   [[ "$keys" == "0" ]] || findings="${findings:+$findings; }ROOT ACCESS KEYS PRESENT"

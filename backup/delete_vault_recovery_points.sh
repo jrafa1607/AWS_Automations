@@ -19,7 +19,7 @@ while [[ $# -gt 0 ]]; do
     --vault)        vault="${2:-}"; shift 2 ;;
     --region)       region="${2:-}"; shift 2 ;;
     --expired-only) expired_only=true; shift ;;
-    -h|--help)      sed -n '2,13p' "$0"; exit 0 ;;
+    -h|--help)      sed -n '2,11p' "$0"; exit 0 ;;
     *)              die "Unknown argument: $1 (use --help)" ;;
   esac
 done
@@ -48,11 +48,12 @@ total=0 deleted=0 failed=0
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "Backup vault '$vault': $account / $region"
-  points="$(aws backup list-recovery-points-by-backup-vault --backup-vault-name "$vault" \
-    --profile "$account" --region "$region" --output text --query "$query" 2>/dev/null)" || {
-    log "  Vault not found or not accessible in $account"
+  if ! points="$(aws_try backup list-recovery-points-by-backup-vault --backup-vault-name "$vault" \
+      --profile "$account" --region "$region" --output text --query "$query")"; then
+    log "  Skipping $account: $(last_error)"
+    csv_row "$account" "$vault" "$region" "" "" "" "skipped: $(last_error)" >> "$out"
     continue
-  }
+  fi
   [[ -n "$points" ]] || { log "  No recovery point in scope"; continue; }
 
   while IFS=$'\t' read -r arn created status; do
@@ -60,11 +61,11 @@ for account in "${ACCOUNTS[@]}"; do
     total=$((total + 1))
     if is_dry_run; then
       action="would delete"
-    elif aws backup delete-recovery-point --backup-vault-name "$vault" --recovery-point-arn "$arn" \
+    elif aws_try backup delete-recovery-point --backup-vault-name "$vault" --recovery-point-arn "$arn" \
            --profile "$account" --region "$region" </dev/null; then
       action="deleted"; deleted=$((deleted + 1))
     else
-      action="FAILED (check Vault Lock or permissions)"; failed=$((failed + 1))
+      action="FAILED: $(last_error) (check Vault Lock or permissions)"; failed=$((failed + 1))
     fi
     csv_row "$account" "$vault" "$region" "$arn" "$created" "$status" "$action" >> "$out"
   done <<< "$points"

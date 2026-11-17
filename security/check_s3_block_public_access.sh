@@ -19,25 +19,35 @@ evaluate() {
   if [[ "$*" == "True True True True" ]]; then echo "OK"; else echo "BLOCK PUBLIC ACCESS NOT FULLY ENABLED"; fi
 }
 
+# Prints the finding for a failed call: "not configured" only when AWS says so, otherwise the error.
+missing_or_error() {
+  local error
+  error="$(last_error)"
+  if [[ "$error" == "NoSuchPublicAccessBlockConfiguration" ]]; then echo "$1"; else echo "ERROR: $error"; fi
+}
+
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "S3 Block Public Access: $account"
   id="$(account_id "$account")"
 
-  if settings="$(aws s3control get-public-access-block --account-id "$id" --profile "$account" --output text --query "$QUERY" 2>/dev/null)"; then
+  if settings="$(aws_try s3control get-public-access-block --account-id "$id" --profile "$account" --output text --query "$QUERY")"; then
     read -r a b c d <<< "$settings"
     csv_row "$account" account "$id" "$a" "$b" "$c" "$d" "$(evaluate "$a" "$b" "$c" "$d")" >> "$out"
   else
-    csv_row "$account" account "$id" "" "" "" "" "NOT CONFIGURED AT ACCOUNT LEVEL" >> "$out"
+    csv_row "$account" account "$id" "" "" "" "" "$(missing_or_error "NOT CONFIGURED AT ACCOUNT LEVEL")" >> "$out"
   fi
 
-  buckets="$(aws s3api list-buckets --profile "$account" --output text --query 'Buckets[].Name')"
+  if ! buckets="$(aws_try s3api list-buckets --profile "$account" --output text --query 'Buckets[].Name')"; then
+    csv_row "$account" bucket "" "" "" "" "" "ERROR LISTING BUCKETS: $(last_error)" >> "$out"
+    continue
+  fi
   for bucket in $buckets; do
-    if settings="$(aws s3api get-public-access-block --bucket "$bucket" --profile "$account" --output text --query "$QUERY" 2>/dev/null)"; then
+    if settings="$(aws_try s3api get-public-access-block --bucket "$bucket" --profile "$account" --output text --query "$QUERY")"; then
       read -r a b c d <<< "$settings"
       csv_row "$account" bucket "$bucket" "$a" "$b" "$c" "$d" "$(evaluate "$a" "$b" "$c" "$d")" >> "$out"
     else
-      csv_row "$account" bucket "$bucket" "" "" "" "" "NOT CONFIGURED ON BUCKET (account level may still protect it)" >> "$out"
+      csv_row "$account" bucket "$bucket" "" "" "" "" "$(missing_or_error "NOT CONFIGURED ON BUCKET (account level may still protect it)")" >> "$out"
     fi
   done
 done

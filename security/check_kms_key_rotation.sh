@@ -18,16 +18,26 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "KMS key rotation: $account / $region"
-    keys="$(aws kms list-keys --profile "$account" --region "$region" --output text --query 'Keys[].KeyId')"
+    if ! keys="$(aws_try kms list-keys --profile "$account" --region "$region" --output text --query 'Keys[].KeyId')"; then
+      csv_row "$account" "$region" "" "" "" "ERROR: $(last_error)" >> "$out"
+      continue
+    fi
     for key in $keys; do
-      IFS=$'\t' read -r manager spec state description < <(aws kms describe-key --key-id "$key" \
-        --profile "$account" --region "$region" --output text \
-        --query 'KeyMetadata.[KeyManager, KeySpec, KeyState, Description || `"None"`]' 2>/dev/null) || continue
+      if ! metadata="$(aws_try kms describe-key --key-id "$key" --profile "$account" --region "$region" --output text \
+          --query 'KeyMetadata.[KeyManager, KeySpec, KeyState, Description || `"None"`]')"; then
+        csv_row "$account" "$region" "$key" "" "" "ERROR: $(last_error)" >> "$out"
+        continue
+      fi
+      IFS=$'\t' read -r manager spec state description <<< "$metadata"
       [[ "$manager" == "CUSTOMER" && "$spec" == "SYMMETRIC_DEFAULT" && "$state" == "Enabled" ]] || continue
-      rotation="$(aws kms get-key-rotation-status --key-id "$key" --profile "$account" --region "$region" \
-        --output text --query KeyRotationEnabled 2>/dev/null || echo "UNKNOWN")"
-      finding="OK"
-      [[ "$rotation" == "True" ]] || finding="AUTOMATIC ROTATION DISABLED"
+      if rotation="$(aws_try kms get-key-rotation-status --key-id "$key" --profile "$account" --region "$region" \
+          --output text --query KeyRotationEnabled)"; then
+        finding="OK"
+        [[ "$rotation" == "True" ]] || finding="AUTOMATIC ROTATION DISABLED"
+      else
+        rotation=""
+        finding="ERROR: $(last_error)"
+      fi
       csv_row "$account" "$region" "$key" "$description" "$rotation" "$finding" >> "$out"
     done
   done

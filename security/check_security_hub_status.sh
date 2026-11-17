@@ -17,12 +17,17 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "Security Hub: $account / $region"
-    if ! aws securityhub describe-hub --profile "$account" --region "$region" --output text --query HubArn >/dev/null 2>&1; then
-      csv_row "$account" "$region" "False" "" "SECURITY HUB NOT ENABLED" >> "$out"
+    if ! aws_try securityhub describe-hub --profile "$account" --region "$region" --output text --query HubArn >/dev/null; then
+      error="$(last_error)"
+      if [[ "$error" == "InvalidAccessException" || "$error" == "ResourceNotFoundException" ]]; then
+        csv_row "$account" "$region" "False" "" "SECURITY HUB NOT ENABLED" >> "$out"
+      else
+        csv_row "$account" "$region" "" "" "ERROR: $error" >> "$out"
+      fi
       continue
     fi
-    standards="$(aws securityhub get-enabled-standards --profile "$account" --region "$region" --output text \
-      --query 'StandardsSubscriptions[?StandardsStatus==`READY`].StandardsArn' 2>/dev/null || true)"
+    standards="$(aws_try securityhub get-enabled-standards --profile "$account" --region "$region" --output text \
+      --query 'StandardsSubscriptions[?StandardsStatus==`READY`].StandardsArn' || true)"
     names=""
     for arn in $standards; do
       name="${arn#*standards/}"

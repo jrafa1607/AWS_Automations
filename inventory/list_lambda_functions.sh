@@ -17,13 +17,16 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "Lambda functions: $account / $region"
-    aws lambda list-functions --profile "$account" --region "$region" --output text \
-      --query 'Functions[].[FunctionName, Runtime, LastModified, FunctionArn]' |
+    if ! functions="$(aws_try lambda list-functions --profile "$account" --region "$region" --output text \
+        --query 'Functions[].[FunctionName, Runtime || `"None"`, LastModified, FunctionArn]')"; then
+      csv_row "$account" "$region" "ERROR: $(last_error)" "" "" "" >> "$out"
+      continue
+    fi
     while IFS=$'\t' read -r name runtime modified arn; do
       [[ -n "$name" ]] || continue
       csv_row "$account" "$region" "$name" "$runtime" "$modified" "$arn"
-    done >> "$out"
+    done <<< "$functions" >> "$out"
   done
 done
 
-log "Report: $out"
+log "Report: $out (runtime None = container image function)"

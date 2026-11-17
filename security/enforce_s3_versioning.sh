@@ -12,6 +12,7 @@
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib/common.sh"
 require_tools aws
 load_accounts
+
 banner_mode
 
 if ! is_dry_run; then
@@ -25,24 +26,25 @@ csv_row account bucket previous_status action > "$out"
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "S3 versioning: $account"
-  buckets="$(aws s3api list-buckets --profile "$account" --output text --query 'Buckets[].Name')"
+  if ! buckets="$(aws_try s3api list-buckets --profile "$account" --output text --query 'Buckets[].Name')"; then
+    csv_row "$account" "" "" "ERROR LISTING BUCKETS: $(last_error)" >> "$out"
+    continue
+  fi
   for bucket in $buckets; do
-    status="$(aws s3api get-bucket-versioning --bucket "$bucket" --profile "$account" --output text --query Status 2>/dev/null || echo "ACCESS_DENIED")"
-    case "$status" in
-      Enabled)
-        action="none" ;;
-      ACCESS_DENIED)
-        action="skipped: no permission to read the configuration" ;;
-      *)
-        if is_dry_run; then
-          action="would enable"
-        elif aws s3api put-bucket-versioning --bucket "$bucket" --profile "$account" \
-               --versioning-configuration Status=Enabled; then
-          action="enabled"
-        else
-          action="FAILED to enable"
-        fi ;;
-    esac
+    if ! status="$(aws_try s3api get-bucket-versioning --bucket "$bucket" --profile "$account" --output text --query Status)"; then
+      csv_row "$account" "$bucket" "" "skipped: $(last_error)" >> "$out"
+      continue
+    fi
+    if [[ "$status" == "Enabled" ]]; then
+      action="none"
+    elif is_dry_run; then
+      action="would enable"
+    elif aws_try s3api put-bucket-versioning --bucket "$bucket" --profile "$account" \
+           --versioning-configuration Status=Enabled; then
+      action="enabled"
+    else
+      action="FAILED to enable: $(last_error)"
+    fi
     [[ "$status" == "None" ]] && status="Never enabled"
     csv_row "$account" "$bucket" "$status" "$action" >> "$out"
   done

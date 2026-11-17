@@ -19,34 +19,44 @@ for account in "${ACCOUNTS[@]}"; do
   for region in $REGIONS; do
     log "Public snapshots: $account / $region"
 
-    aws ec2 describe-snapshots --owner-ids self --restorable-by-user-ids all \
-      --profile "$account" --region "$region" --output text \
-      --query 'Snapshots[].[SnapshotId, VolumeId]' |
-    while IFS=$'\t' read -r snapshot volume; do
-      [[ -n "$snapshot" ]] || continue
-      csv_row "$account" "$region" "EBS" "$snapshot" "$volume" "PUBLIC SNAPSHOT"
-    done >> "$out"
+    if ebs="$(aws_try ec2 describe-snapshots --owner-ids self --restorable-by-user-ids all \
+        --profile "$account" --region "$region" --output text --query 'Snapshots[].[SnapshotId, VolumeId]')"; then
+      while IFS=$'\t' read -r snapshot volume; do
+        [[ -n "$snapshot" ]] || continue
+        csv_row "$account" "$region" "EBS" "$snapshot" "$volume" "PUBLIC SNAPSHOT"
+      done <<< "$ebs" >> "$out"
+    else
+      csv_row "$account" "$region" "EBS" "" "" "ERROR: $(last_error)" >> "$out"
+    fi
 
-    for snapshot in $(aws rds describe-db-snapshots --snapshot-type manual --profile "$account" --region "$region" \
-        --output text --query 'DBSnapshots[].DBSnapshotIdentifier'); do
-      shared="$(aws rds describe-db-snapshot-attributes --db-snapshot-identifier "$snapshot" \
-        --profile "$account" --region "$region" --output text \
-        --query 'DBSnapshotAttributesResult.DBSnapshotAttributes[?AttributeName==`restore`].AttributeValues[]')"
-      if [[ " $shared " == *" all "* ]]; then
-        csv_row "$account" "$region" "RDS" "$snapshot" "db instance" "PUBLIC SNAPSHOT" >> "$out"
-      fi
-    done
+    if db_snapshots="$(aws_try rds describe-db-snapshots --snapshot-type manual --profile "$account" --region "$region" \
+        --output text --query 'DBSnapshots[].DBSnapshotIdentifier')"; then
+      for snapshot in $db_snapshots; do
+        shared="$(aws_try rds describe-db-snapshot-attributes --db-snapshot-identifier "$snapshot" \
+          --profile "$account" --region "$region" --output text \
+          --query 'DBSnapshotAttributesResult.DBSnapshotAttributes[?AttributeName==`restore`].AttributeValues[]' || true)"
+        if [[ " $shared " == *" all "* ]]; then
+          csv_row "$account" "$region" "RDS" "$snapshot" "db instance" "PUBLIC SNAPSHOT" >> "$out"
+        fi
+      done
+    else
+      csv_row "$account" "$region" "RDS" "" "" "ERROR: $(last_error)" >> "$out"
+    fi
 
-    for snapshot in $(aws rds describe-db-cluster-snapshots --snapshot-type manual --profile "$account" --region "$region" \
-        --output text --query 'DBClusterSnapshots[].DBClusterSnapshotIdentifier'); do
-      shared="$(aws rds describe-db-cluster-snapshot-attributes --db-cluster-snapshot-identifier "$snapshot" \
-        --profile "$account" --region "$region" --output text \
-        --query 'DBClusterSnapshotAttributesResult.DBClusterSnapshotAttributes[?AttributeName==`restore`].AttributeValues[]')"
-      if [[ " $shared " == *" all "* ]]; then
-        csv_row "$account" "$region" "RDS cluster" "$snapshot" "db cluster" "PUBLIC SNAPSHOT" >> "$out"
-      fi
-    done
+    if cluster_snapshots="$(aws_try rds describe-db-cluster-snapshots --snapshot-type manual --profile "$account" --region "$region" \
+        --output text --query 'DBClusterSnapshots[].DBClusterSnapshotIdentifier')"; then
+      for snapshot in $cluster_snapshots; do
+        shared="$(aws_try rds describe-db-cluster-snapshot-attributes --db-cluster-snapshot-identifier "$snapshot" \
+          --profile "$account" --region "$region" --output text \
+          --query 'DBClusterSnapshotAttributesResult.DBClusterSnapshotAttributes[?AttributeName==`restore`].AttributeValues[]' || true)"
+        if [[ " $shared " == *" all "* ]]; then
+          csv_row "$account" "$region" "RDS cluster" "$snapshot" "db cluster" "PUBLIC SNAPSHOT" >> "$out"
+        fi
+      done
+    else
+      csv_row "$account" "$region" "RDS cluster" "" "" "ERROR: $(last_error)" >> "$out"
+    fi
   done
 done
 
-log "Report: $out (only public snapshots are listed; an empty report means none were found)"
+log "Report: $out (only public snapshots and errors are listed; an empty report means none were found)"

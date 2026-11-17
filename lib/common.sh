@@ -5,6 +5,7 @@
 #   source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib/common.sh"
 
 set -euo pipefail
+umask 077   # reports and temporary files are readable only by the current user
 
 # Settings (override with environment variables)
 ACCOUNTS_FILE="${ACCOUNTS_FILE:-accounts}"    # one AWS CLI profile per line
@@ -12,6 +13,9 @@ REGIONS="${REGIONS:-us-east-1 sa-east-1}"     # space-separated list of regions
 DRY_RUN="${DRY_RUN:-true}"                    # scripts that change resources act only when DRY_RUN=false
 OUTPUT_DIR="${OUTPUT_DIR:-reports}"           # CSV reports go here (ignored by git)
 export AWS_PAGER=""
+
+AWS_ERR_FILE="$(mktemp)"
+trap 'rm -f "$AWS_ERR_FILE"' EXIT
 
 log() { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*" >&2; }
 die() { log "ERROR: $*"; exit 1; }
@@ -21,6 +25,23 @@ require_tools() {
   for tool in "$@"; do
     command -v "$tool" >/dev/null 2>&1 || die "Required tool not found: $tool"
   done
+}
+
+# Runs an AWS CLI command without stopping the script when it fails.
+# stdout is returned; stderr is kept so last_error can report the reason. Use it as:
+#   if ! data="$(aws_try ec2 describe-vpcs ...)"; then csv_row ... "ERROR: $(last_error)"; continue; fi
+aws_try() {
+  aws "$@" 2>"$AWS_ERR_FILE"
+}
+
+# Prints the error code of the last failed aws_try call (for example, AccessDenied).
+last_error() {
+  local code
+  code="$(sed -n 's/.*An error occurred (\([^)]*\)).*/\1/p' "$AWS_ERR_FILE" | head -n 1)"
+  if [[ -z "$code" ]]; then
+    code="$(head -n 1 "$AWS_ERR_FILE" | cut -c1-120)"
+  fi
+  printf '%s' "${code:-unknown error}"
 }
 
 # Reads the accounts file into the ACCOUNTS array, ignoring comments and blank lines.
@@ -59,11 +80,15 @@ report_file() {
   printf '%s/%s_%s.csv' "$OUTPUT_DIR" "$1" "$(date '+%Y%m%d_%H%M%S')"
 }
 
-# Prints one CSV row, quoting every field.
+# Prints one CSV row, quoting every field. Values that a spreadsheet would run as a formula
+# (starting with = + - @, tab, or carriage return) get a leading quote, except plain numbers.
 csv_row() {
   local first=true field
   for field in "$@"; do
     if [[ "$first" == true ]]; then first=false; else printf ','; fi
+    if [[ "$field" =~ ^[=+@-] || "$field" == $'\t'* || "$field" == $'\r'* ]] && [[ ! "$field" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+      field="'$field"
+    fi
     field="${field//\"/\"\"}"
     printf '"%s"' "$field"
   done

@@ -18,9 +18,12 @@ found=false
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
-    result="$(aws ec2 describe-network-interfaces --profile "$account" --region "$region" --output text \
-      --filters "Name=addresses.private-ip-address,Values=$ip" \
-      --query 'NetworkInterfaces[].[NetworkInterfaceId, Attachment.InstanceId, VpcId, SubnetId, join(`,`, Groups[].GroupId), Description]')"
+    if ! result="$(aws_try ec2 describe-network-interfaces --profile "$account" --region "$region" --output text \
+        --filters "Name=addresses.private-ip-address,Values=$ip" \
+        --query 'NetworkInterfaces[].[NetworkInterfaceId, Attachment.InstanceId, VpcId, SubnetId, join(`,`, Groups[].GroupId), Description]')"; then
+      log "  $account / $region: ERROR $(last_error)"
+      continue
+    fi
     if [[ -n "$result" ]]; then
       found=true
       while IFS=$'\t' read -r eni instance vpc subnet groups description; do

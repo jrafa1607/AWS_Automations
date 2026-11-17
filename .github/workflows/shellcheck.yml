@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "**.sh"
+      - "tests/**"
       - ".github/workflows/shellcheck.yml"
   pull_request:
     paths:
       - "**.sh"
+      - "tests/**"
   workflow_dispatch:
 
 permissions:
@@ -26,3 +28,13 @@ jobs:
         run: |
           shellcheck --version
           find . -name '*.sh' -print0 | xargs -0 shellcheck -x -P SCRIPTDIR
+          shellcheck tests/stub/aws
+
+  tests:
+    runs-on: ubuntu-latest
+    needs: shellcheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run offline tests (fake AWS CLI, no AWS account)
+        run: bash tests/run_tests.sh

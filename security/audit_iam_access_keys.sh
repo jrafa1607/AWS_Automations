@@ -18,14 +18,24 @@ csv_row account user access_key_id status created age_days last_used days_since_
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "IAM access keys: $account"
-  users="$(aws iam list-users --profile "$account" --output text --query 'Users[].UserName')"
+  if ! users="$(aws_try iam list-users --profile "$account" --output text --query 'Users[].UserName')"; then
+    csv_row "$account" "" "" "" "" "" "" "" "" "ERROR: $(last_error)" >> "$out"
+    continue
+  fi
   for user in $users; do
-    keys="$(aws iam list-access-keys --user-name "$user" --profile "$account" --output text \
-      --query 'AccessKeyMetadata[].[AccessKeyId, Status, CreateDate]')"
+    if ! keys="$(aws_try iam list-access-keys --user-name "$user" --profile "$account" --output text \
+        --query 'AccessKeyMetadata[].[AccessKeyId, Status, CreateDate]')"; then
+      csv_row "$account" "$user" "" "" "" "" "" "" "" "ERROR: $(last_error)" >> "$out"
+      continue
+    fi
     [[ -n "$keys" ]] || continue
     while IFS=$'\t' read -r key status created; do
-      read -r last_used last_service < <(aws iam get-access-key-last-used --access-key-id "$key" --profile "$account" \
-        --output text --query '[AccessKeyLastUsed.LastUsedDate, AccessKeyLastUsed.ServiceName]' </dev/null)
+      if ! usage="$(aws_try iam get-access-key-last-used --access-key-id "$key" --profile "$account" \
+          --output text --query '[AccessKeyLastUsed.LastUsedDate, AccessKeyLastUsed.ServiceName]' </dev/null)"; then
+        csv_row "$account" "$user" "$key" "$status" "$created" "" "" "" "" "ERROR: $(last_error)"
+        continue
+      fi
+      read -r last_used last_service <<< "$usage"
       age="$(days_since "$created")"
       unused="$(days_since "$last_used")"
       finding="OK"

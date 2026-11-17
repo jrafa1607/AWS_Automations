@@ -17,20 +17,27 @@ csv_row account zone_id zone_name private_zone record_name type ttl values alias
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "Route 53: $account"
-  zones="$(aws route53 list-hosted-zones --profile "$account" --output text \
-    --query 'HostedZones[].[Id, Name, Config.PrivateZone]')"
+  if ! zones="$(aws_try route53 list-hosted-zones --profile "$account" --output text \
+      --query 'HostedZones[].[Id, Name, Config.PrivateZone]')"; then
+    csv_row "$account" "ERROR: $(last_error)" "" "" "" "" "" "" "" >> "$out"
+    continue
+  fi
   if [[ -z "$zones" ]]; then
     log "  $account has no hosted zone"
     continue
   fi
   while IFS=$'\t' read -r zone_id zone_name private_zone; do
     [[ -n "$zone_id" ]] || continue
-    aws route53 list-resource-record-sets --hosted-zone-id "$zone_id" --profile "$account" --output text \
-      --query 'ResourceRecordSets[].[Name, Type, TTL, join(` `, ResourceRecords[].Value || `[]`) || `"None"`, AliasTarget.DNSName]' </dev/null |
+    if ! records="$(aws_try route53 list-resource-record-sets --hosted-zone-id "$zone_id" --profile "$account" --output text \
+        --query 'ResourceRecordSets[].[Name, Type, TTL, join(` `, ResourceRecords[].Value || `[]`) || `"None"`, AliasTarget.DNSName]' </dev/null)"; then
+      csv_row "$account" "$zone_id" "$zone_name" "$private_zone" "ERROR: $(last_error)" "" "" "" ""
+      continue
+    fi
     while IFS=$'\t' read -r name type ttl values alias; do
+      [[ -n "$name" ]] || continue
       csv_row "$account" "$zone_id" "$zone_name" "$private_zone" "$name" "$type" "$ttl" "$values" "$alias"
-    done >> "$out"
-  done <<< "$zones"
+    done <<< "$records"
+  done <<< "$zones" >> "$out"
 done
 
 log "Report: $out"

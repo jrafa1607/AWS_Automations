@@ -1,4 +1,4 @@
-### 🛠️ Setup Guide
+# 🛠️ Setup Guide
 
 The scripts use the **AWS CLI v2** with **AWS IAM Identity Center (SSO)** credentials. Each AWS account is reached through a named CLI profile, and the scripts loop over the profiles listed in a local `accounts` file.
 
@@ -8,7 +8,7 @@ The scripts use the **AWS CLI v2** with **AWS IAM Identity Center (SSO)** creden
 
 * **AWS CLI v2:** [Installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * **Bash 3.2 or later:** available on Linux, macOS, WSL, and AWS CloudShell
-* After cloning, make the scripts executable if needed: `chmod +x */*.sh`
+* The scripts are stored as executable in git. If your copy lost the permission (for example, after a ZIP download), run: `chmod +x */*.sh tests/stub/aws`
 
 #### 2. Create a permission set for the checks
 
@@ -68,7 +68,7 @@ The `accounts` file is ignored by git, so your account profile names are never p
 
 #### 🔐 Authentication and Execution
 
-Log in once per SSO session. The command opens the browser and stores a temporary credential in the local cache:
+Log in once per SSO session. The command opens the browser and stores a temporary credential in the local cache, valid for every profile that uses the session:
 
 ```bash
 aws sso login --sso-session my-sso
@@ -80,10 +80,10 @@ Then run any script from the repository root:
 ./security/check_cloudtrail_status.sh
 ```
 
-If a session expires during a run, the affected accounts are skipped with a message asking you to log in again.
+If a session expires during a run, the affected accounts are skipped with a message asking you to log in again. API errors in a single account or region (for example, `AccessDenied` from an SCP) are written to the report as `ERROR: <code>`, and the script continues with the next one.
 
 ---
 
 #### 📄 Reports
 
-Each script writes a timestamped CSV file to `reports/` (for example, `reports/open_security_groups_20261111_101500.csv`). Reports may contain account IDs, IPs, and user names: keep them local and share them only through approved channels.
+Each script writes a timestamped CSV file to `reports/` (for example, `reports/open_security_groups_20261111_101500.csv`). Reports may contain account IDs, IPs, and user names: they are created readable only by your user (`umask 077`). Keep them local and share them only through approved channels.

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Fake AWS CLI used by tests/run_tests.sh. It records every call and returns canned answers.
+# Accounts: acct-ok (everything fine), acct-denied (AccessDenied on most calls), acct-bad (findings).
+echo "$*" >> "${STUB_LOG:-/dev/null}"
+args=" $* "
+
+fail() { echo "An error occurred ($1) when calling the $2 operation: test" >&2; exit 254; }
+
+case "$args" in
+  *" sts get-caller-identity "*) echo "111122223333"; exit 0 ;;
+esac
+
+if [[ "$args" == *" --profile acct-denied "* && "$args" != *" sts "* ]]; then
+  fail AccessDenied Describe
+fi
+
+case "$args" in
+  *" guardduty list-detectors "*)
+    if [[ "$args" == *"acct-bad"* ]]; then echo "None"; else echo "det123"; fi ;;
+  *" guardduty get-detector "*) echo "ENABLED" ;;
+  *" iam get-account-password-policy "*)
+    if [[ "$args" == *"acct-bad"* ]]; then fail NoSuchEntity GetAccountPasswordPolicy; fi
+    printf '14\tTrue\tTrue\tTrue\tTrue\t90\t24\n' ;;
+  *" ec2 describe-instances "*)
+    printf 'i-001\t=HYPERLINK("http://example.invalid")\trunning\tus-east-1a\t10.0.0.1\tNone\n'
+    printf 'i-002\t-1\tstopped\tus-east-1b\t10.0.0.2\tNone\n' ;;
+  *" rds describe-db-instances "*)
+    printf 'aurora-1\taurora-postgresql\tcluster-a\tFalse\tTrue\tFalse\n'
+    printf 'pg-1\tpostgres\tNone\tTrue\tFalse\tFalse\n' ;;
+  *" rds describe-db-clusters "*) printf 'cluster-a:true\n' ;;
+  *" s3api list-buckets "*) printf 'bucket-a\tbucket-b\n' ;;
+  *" s3api get-bucket-versioning "*)
+    if [[ "$args" == *"bucket-a"* ]]; then echo "Enabled"; else echo "None"; fi ;;
+  *" s3api put-bucket-versioning "*) exit 0 ;;
+  *) echo "None" ;;
+esac

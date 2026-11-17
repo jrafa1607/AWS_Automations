@@ -17,8 +17,12 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "EBS default encryption: $account / $region"
-    enabled="$(aws ec2 get-ebs-encryption-by-default --profile "$account" --region "$region" --output text --query EbsEncryptionByDefault)"
-    key="$(aws ec2 get-ebs-default-kms-key-id --profile "$account" --region "$region" --output text --query KmsKeyId 2>/dev/null || echo "")"
+    if ! enabled="$(aws_try ec2 get-ebs-encryption-by-default --profile "$account" --region "$region" \
+        --output text --query EbsEncryptionByDefault)"; then
+      csv_row "$account" "$region" "" "" "ERROR: $(last_error)" >> "$out"
+      continue
+    fi
+    key="$(aws_try ec2 get-ebs-default-kms-key-id --profile "$account" --region "$region" --output text --query KmsKeyId || echo "")"
     finding="OK"
     [[ "$enabled" == "True" ]] || finding="EBS ENCRYPTION BY DEFAULT DISABLED"
     csv_row "$account" "$region" "$enabled" "$key" "$finding" >> "$out"

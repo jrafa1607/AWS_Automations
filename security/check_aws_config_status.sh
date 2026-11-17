@@ -17,11 +17,15 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "AWS Config: $account / $region"
-    read -r recorder recording last_status < <(aws configservice describe-configuration-recorder-status \
-      --profile "$account" --region "$region" --output text \
-      --query 'ConfigurationRecordersStatus[0].[name, recording, lastStatus]') || true
-    channel="$(aws configservice describe-delivery-channels --profile "$account" --region "$region" \
-      --output text --query 'DeliveryChannels[0].name')"
+    if ! status="$(aws_try configservice describe-configuration-recorder-status --profile "$account" --region "$region" \
+        --output text --query 'ConfigurationRecordersStatus[0].[name, recording, lastStatus]')" ||
+       ! channel="$(aws_try configservice describe-delivery-channels --profile "$account" --region "$region" \
+        --output text --query 'DeliveryChannels[0].name')"; then
+      csv_row "$account" "$region" "" "" "" "" "ERROR: $(last_error)" >> "$out"
+      continue
+    fi
+    recorder="" recording="" last_status=""
+    read -r recorder recording last_status <<< "$status" || true
     findings=""
     if [[ -z "$recorder" || "$recorder" == "None" ]]; then
       findings="NO CONFIGURATION RECORDER"

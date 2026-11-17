@@ -18,9 +18,14 @@ csv_row account min_length symbols numbers uppercase lowercase max_age_days reus
 for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   log "IAM password policy: $account"
-  if ! policy="$(aws iam get-account-password-policy --profile "$account" --output text \
-      --query 'PasswordPolicy.[MinimumPasswordLength, RequireSymbols, RequireNumbers, RequireUppercaseCharacters, RequireLowercaseCharacters, MaxPasswordAge, PasswordReusePrevention]' 2>/dev/null)"; then
-    csv_row "$account" "" "" "" "" "" "" "" "NO PASSWORD POLICY (AWS defaults apply)" >> "$out"
+  if ! policy="$(aws_try iam get-account-password-policy --profile "$account" --output text \
+      --query 'PasswordPolicy.[MinimumPasswordLength, RequireSymbols, RequireNumbers, RequireUppercaseCharacters, RequireLowercaseCharacters, MaxPasswordAge, PasswordReusePrevention]')"; then
+    error="$(last_error)"
+    if [[ "$error" == "NoSuchEntity" ]]; then
+      csv_row "$account" "" "" "" "" "" "" "" "NO PASSWORD POLICY (AWS defaults apply)" >> "$out"
+    else
+      csv_row "$account" "" "" "" "" "" "" "" "ERROR: $error" >> "$out"
+    fi
     continue
   fi
   read -r length symbols numbers upper lower max_age reuse <<< "$policy"

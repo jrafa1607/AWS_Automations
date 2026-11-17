@@ -17,13 +17,16 @@ for account in "${ACCOUNTS[@]}"; do
   check_session "$account" || continue
   for region in $REGIONS; do
     log "DocumentDB clusters: $account / $region"
-    aws docdb describe-db-clusters --profile "$account" --region "$region" --output text \
-      --filters Name=engine,Values=docdb \
-      --query 'DBClusters[].[DBClusterIdentifier, Status, EngineVersion, StorageEncrypted, DeletionProtection]' |
+    if ! clusters="$(aws_try docdb describe-db-clusters --profile "$account" --region "$region" --output text \
+        --filters Name=engine,Values=docdb \
+        --query 'DBClusters[].[DBClusterIdentifier, Status, EngineVersion, StorageEncrypted, DeletionProtection]')"; then
+      csv_row "$account" "$region" "ERROR: $(last_error)" "" "" "" "" >> "$out"
+      continue
+    fi
     while IFS=$'\t' read -r cluster status version encrypted protection; do
       [[ -n "$cluster" ]] || continue
       csv_row "$account" "$region" "$cluster" "$status" "$version" "$encrypted" "$protection"
-    done >> "$out"
+    done <<< "$clusters" >> "$out"
   done
 done
 
