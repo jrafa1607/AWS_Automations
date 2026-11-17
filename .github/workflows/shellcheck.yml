@@ -17,9 +17,16 @@ permissions:
 
 jobs:
   shellcheck:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Check executable bit
+        run: |
+          missing="$(git ls-files -s '*.sh' tests/stub/aws | awk '$1 != "100755" {print $4}')"
+          if [ -n "$missing" ]; then
+            echo "::warning::Scripts not marked as executable in git (./script.sh will fail after cloning): $(echo $missing | tr '\n' ' ')"
+          fi
 
       - name: Check syntax
         run: find . -name '*.sh' -print0 | xargs -0 -n1 bash -n
@@ -31,10 +38,10 @@ jobs:
           shellcheck tests/stub/aws
 
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: shellcheck
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run offline tests (fake AWS CLI, no AWS account)
         run: bash tests/run_tests.sh

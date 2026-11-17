@@ -7,7 +7,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-export PATH="$ROOT/tests/stub:$PATH"
+# Copy the fake CLI to a temporary bin folder so the tests work even if git lost the executable bit.
+mkdir -p "$WORK/bin"
+cp "$ROOT/tests/stub/aws" "$WORK/bin/aws"
+chmod +x "$WORK/bin/aws"
+export PATH="$WORK/bin:$PATH"
 export ACCOUNTS_FILE="$WORK/accounts" OUTPUT_DIR="$WORK/reports" STUB_LOG="$WORK/calls.log" REGIONS="us-east-1"
 printf 'acct-ok\nacct-denied\nacct-bad\n' > "$ACCOUNTS_FILE"
 
@@ -21,11 +25,16 @@ check() {
   fi
 }
 
-# Runs a script quietly and prints the path of the newest report it wrote.
+# Runs a script quietly and prints the path of the report it wrote (empty if it wrote none).
 run() {
   rm -rf "$OUTPUT_DIR"
-  "$ROOT/$1" >/dev/null 2>&1 </dev/null
-  find "$OUTPUT_DIR" -name '*.csv' | head -n 1
+  bash "$ROOT/$1" >/dev/null 2>"$WORK/stderr.log" </dev/null || log_failure "$1"
+  find "$OUTPUT_DIR" -name '*.csv' 2>/dev/null | head -n 1
+}
+
+log_failure() {
+  printf 'ERROR %s exited with an error:\n' "$1" >&2
+  sed 's/^/      /' "$WORK/stderr.log" >&2
 }
 
 report="$(run security/check_guardduty_status.sh)"
@@ -51,7 +60,7 @@ check "dry run reports the change" grep -q '"bucket-b","Never enabled","would en
 no_change_calls() { ! grep -q put-bucket-versioning "$STUB_LOG"; }
 check "dry run never calls put-bucket-versioning" no_change_calls
 
-owner_only() { [[ -n "$(find "$report" -perm 600)" ]]; }
+owner_only() { [[ -n "$report" && -n "$(find "$report" -perm 600)" ]]; }
 check "reports are readable only by the owner" owner_only
 
 printf '\n%d passed, %d failed\n' "$passed" "$failed"
